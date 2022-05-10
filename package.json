@@ -15,6 +15,10 @@
 			{
 				"command": "profile-manager.saveProfile",
 				"title": "Save Current Profile"
+			},
+         {
+				"command": "profile-manager.loadProfile",
+				"title": "Load Profile"
 			}
 		],
 		"configuration": [
@@ -37,7 +41,8 @@
 	},
 	"activationEvents": [
 		"onStartupFinished",
-		"onCommand:profile-manager.saveProfile"
+		"onCommand:profile-manager.saveProfile",
+		"onCommand:profile-manager.loadProfile"
 	],
 	"scripts": {
 		"vscode:prepublish": "yarn run package",
