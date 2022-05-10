@@ -1,8 +1,6 @@
 import { Dictionary, Profile, UpdateMode } from "@extension/utilities";
 import { ConfigurationTarget, workspace } from 'vscode';
 import { ConfigHelper } from "@extension/helpers";
-import { mapObjectPaths } from "@extension/utilities";
-import { get, has, isEqual, keys, startsWith } from "lodash";
 
 export class ProfileHelper {
 
@@ -12,39 +10,15 @@ export class ProfileHelper {
       this._configHelper = new ConfigHelper();
    }
 
+   /**
+    * Copies the current user's settings, saves it under this extensions
+    * settings as a profile keyed with the provided path string, and then marks
+    * it as the current profile.
+    * 
+    * @param path The hierarchial dot notated path to save the profile at
+    */
    public async saveProfile(path: string) {
-      const runningConfig = this._configHelper.getGlobalConfig();
-      const configPaths = mapObjectPaths(runningConfig);
-
-      const updateFunction = workspace.getConfiguration().update;
-
-      let newSettings: Dictionary = {};
-      let previousPath = "";
-
-      for (const configPath of configPaths) {
-         if (has(newSettings, previousPath) && startsWith(previousPath, configPath)) {
-            continue;
-         }
-
-         const currentValue = get(runningConfig, configPath);
-
-         await updateFunction(configPath, undefined, ConfigurationTarget.Global);
-
-         const newValue = get(this._configHelper.getGlobalConfig(), configPath);
-
-         if (!isEqual(currentValue, newValue)) {
-            newSettings[configPath] = currentValue;
-         }
-
-         previousPath = configPath;
-      }
-
-
-      const actualConfigKeys = keys(newSettings);
-
-      for (const configKey of actualConfigKeys) {
-         await updateFunction(configKey, newSettings[configKey], ConfigurationTarget.Global);
-      }
+      
    }
 
    public getProfile(path: string)/*: Profile*/ {
