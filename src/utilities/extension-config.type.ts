@@ -1,6 +1,8 @@
-import { Dictionary } from "@extension/utilities";
+import { Dictionary, Profile } from "@extension/utilities";
 
 export type ExtensionConfig = {
-   "active-profile": string,
-   "profiles": Dictionary<string>
+   ActiveProfile: string,
+   ProfilesList: Dictionary<string, Profile>,
+   IgnoreExtensions: Array<string>,
+   IgnoreSettings: Array<string>
 };
