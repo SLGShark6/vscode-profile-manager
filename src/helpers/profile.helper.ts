@@ -1,6 +1,7 @@
 import { Dictionary, Profile, UpdateMode } from "@extension/utilities";
 import { ConfigurationTarget, workspace } from 'vscode';
 import { ConfigHelper } from "@extension/helpers";
+import { split } from "lodash";
 
 export class ProfileHelper {
 
@@ -11,14 +12,16 @@ export class ProfileHelper {
    }
 
    /**
-    * Copies the current user's settings, saves it under this extensions
-    * settings as a profile keyed with the provided path string, and then marks
-    * it as the current profile.
+    * Copies the current user settings.json (ignoring this extensions config
+    * and any unmodified parent configs) and saves it in this extensions
+    * profile config under the path specified.
     * 
     * @param path The hierarchial dot notated path to save the profile at
     */
    public async saveProfile(path: string) {
-      
+      const splitPath = split(path, '.');
+
+      const parentConfigs = [];
    }
 
    public getProfile(path: string)/*: Profile*/ {
@@ -27,8 +30,6 @@ export class ProfileHelper {
 
    public async loadProfile(path: string) {
       let helper = new ConfigHelper();
-
-      await helper.setGlobalConfig(UpdateMode.Merge, {});
    }
 
 
