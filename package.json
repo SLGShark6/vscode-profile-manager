@@ -34,6 +34,16 @@
 						"type": "object",
 						"default": {},
 						"description": "Hierarchical object that stores all saved profiles. WARNING! Edit at your own peril."
+					},
+					"profile-manager.ignore-extensions": {
+						"type": "array",
+						"default": [],
+						"description": "List of extension ID's that should always be ignored when making profiles."
+					},
+					"profile-manager.ignore-settings": {
+						"type": "array",
+						"default": [],
+						"description": "Regex style patterns of settings keys to ignore when making profiles."
 					}
 				}
 			}
