@@ -22,7 +22,7 @@ export class ConfigHelper {
     * 
     * @returns Parsed object from the user settings.json file
     */
-   public async getSettingsJSON(): Promise<Dictionary> {
+   public async getUserConfig(): Promise<Dictionary> {
       // Open the user settings.json file in a new editor
       await commands.executeCommand("workbench.action.openSettingsJson");
 
@@ -51,12 +51,12 @@ export class ConfigHelper {
     * @param settings Settings object to overwrite the settings.json file with
     * @param updateMode Whether to merge or overwrite the settings.json file
     */
-   public async setSettingsJSON(settings: Dictionary, updateMode: UpdateMode = UpdateMode.Merge) {
+   public async setUserConfig(settings: Dictionary, updateMode: UpdateMode = UpdateMode.Merge) {
       
       // If settings should be merged
       if (updateMode === UpdateMode.Merge) {
          // Grab the current user config
-         const currentSettings = await this.getSettingsJSON();
+         const currentSettings = await this.getUserConfig();
 
          // Merge configs
          settings = this.mergeConfigs(currentSettings, settings)
