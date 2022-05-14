@@ -1,7 +1,7 @@
 import { Dictionary, Profile, UpdateMode } from "@extension/utilities";
 import { ConfigurationTarget, Extension, extensions, workspace } from 'vscode';
 import { ConfigHelper, ExtensionHelper } from "@extension/helpers";
-import { difference, forOwn, has, isEmpty, isEqual, last, omit, pull, split, transform, union, unset, values, without } from "lodash";
+import { difference, forOwn, has, isEmpty, isEqual, join, last, omit, pull, split, take, transform, union, unset, values, without } from "lodash";
 import { configurationKeys } from "@extension/constants";
 
 export class ProfileHelper {
@@ -62,8 +62,10 @@ export class ProfileHelper {
       for (let i = 1; i < splitPath.length; i++) {
          // If the last profile was not set in the previous iteration
          if (isEmpty(lastProfile)) {
+            // Get the current path being iterated
+            const currentPath = join(take(splitPath, i + 1), ".");
             // Throw an error
-            throw new Error(`Profile item at child path "${splitPath[i - 1]}" does not exist.`)
+            throw new Error(`Profile item at path "${currentPath}" does not exist.`)
          }
 
          // Merge in the profile's settings from the precvious iteration
@@ -193,7 +195,7 @@ export class ProfileHelper {
    }
 
    public getProfile(path: string)/*: Profile*/ {
-
+      
    }
 
    public getDefaultProfileSettings(): Profile {
