@@ -1,4 +1,4 @@
-import { Dictionary, Profile, UpdateMode } from "@extension/utilities";
+import { Dictionary, Profile, ProfileStack, UpdateMode } from "@extension/utilities";
 import { ConfigurationTarget, Extension, extensions, workspace } from 'vscode';
 import { ConfigHelper, ExtensionHelper } from "@extension/helpers";
 import { difference, forOwn, has, isEmpty, isEqual, join, last, omit, pull, split, take, transform, union, unset, values, without } from "lodash";
@@ -68,17 +68,23 @@ export class ProfileHelper {
             throw new Error(`Profile item at path "${currentPath}" does not exist.`)
          }
 
-         // Merge in the profile's settings from the precvious iteration
+         // Merge in the profile's settings from the previous iteration
          mergedParentConfigs = this._configHelper.mergeConfigs(mergedParentConfigs, lastProfile.settings);
          mergedParentExtensionIds = union(mergedParentExtensionIds, lastProfile.extensions);
 
+         // If the profile doesn't have a children object set
+         if (isEmpty(lastProfile.children)) {
+            // Set one
+            lastProfile.children = {};
+         }
+
          // Get the children's object reference of the previous profile to
          // store the new profile in
-         profileStorage = lastProfile.children;
+         profileStorage = lastProfile.children!;
 
          // Update last profile to the current iteration (final one will be the
          // path node that needs to be saved, which may or may not exist)
-         lastProfile = lastProfile.children[splitPath[i]]
+         lastProfile = lastProfile.children![splitPath[i]];
       }
 
       // If the profile at the final path node is empty, it must be a new
@@ -194,8 +200,90 @@ export class ProfileHelper {
       }
    }
 
-   public getProfile(path: string)/*: Profile*/ {
-      
+   /**
+    * Gets the flattened (and merged) representation of the Profile stored at
+    * the path specified.
+    * 
+    * @param path - The path to get the flattened profile from
+    */
+   public getProfile(path: string): Profile {
+      // Get the profile stack at the path passed
+      const profileStack = this.getProfileStack(path);
+
+      // Holds the configs of parent profiles up until the final profile
+      let mergedConfigs: Dictionary = profileStack.settings;
+      let mergedExtensionIds: Array<string> = profileStack.extensions;
+
+      // Set the last stack whose settings were merged
+      let lastStack = profileStack;
+
+      while (!isEmpty(lastStack.child)) {
+         // Set the last stack to the new child
+         lastStack = lastStack.child!;
+
+         // Merge in the profile's settings from the previous iteration
+         mergedConfigs = this._configHelper.mergeConfigs(mergedConfigs, lastStack.settings);
+         mergedExtensionIds = union(mergedExtensionIds, lastStack.extensions);
+      }
+
+      // Return the merged settings in a new Profile object
+      return {
+         settings: mergedConfigs,
+         extensions: mergedExtensionIds
+      };
+   }
+
+   /**
+    * Gets the unflattened limb pointed to by the path from the profiles list tree.
+    * 
+    * @param path 
+    */
+   public getProfileStack(path: string): ProfileStack {
+      // Split the provided path by dot notation
+      const splitPath = split(path, '.');
+
+      // Get the current profiles list
+      const profilesList = workspace.getConfiguration().get(configurationKeys.ProfilesList) as Dictionary<string, Profile>;
+
+      // If no profiles exist
+      if (isEmpty(profilesList)) {
+         throw new Error("No profiles exist to get.");
+      }
+
+      // Initialize the profile stack
+      let profileStack: ProfileStack = this.getDefaultProfileStack();
+
+      // Initialize the next stack to set values for
+      let nextStack = profileStack;
+
+      for (let i = 0; i < splitPath.length; i++) {
+         // Get the current profile in the chain
+         let currentProfile: Profile = profilesList[splitPath[i]];
+
+         // If the profile was not set in the previous iteration
+         if (isEmpty(currentProfile)) {
+            // Get the current path being iterated
+            const currentPath = join(take(splitPath, i + 1), ".");
+            // Throw an error
+            throw new Error(`Profile item at path "${currentPath}" does not exist.`)
+         }
+
+         // Set the settings from the current profile
+         nextStack.id = splitPath[i];
+         nextStack.settings = currentProfile.settings;
+         nextStack.extensions = currentProfile.extensions;
+
+         // If there are still more children to iterate through
+         if ((i + 1) < splitPath.length) {
+            // Initialize the next child
+            nextStack.child = this.getDefaultProfileStack();
+
+            // Set the next stack to the next child
+            nextStack = nextStack.child;
+         }
+      }
+
+      return profileStack;
    }
 
    public getDefaultProfileSettings(): Profile {
@@ -203,6 +291,14 @@ export class ProfileHelper {
          settings: {},
          extensions: [],
          children: {}
+      };
+   }
+
+   public getDefaultProfileStack(): ProfileStack {
+      return {
+         id: "",
+         settings: {},
+         extensions: []
       };
    }
 
