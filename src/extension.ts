@@ -2,7 +2,7 @@
 import * as vscode from 'vscode';
 
 import { ConfigHelper } from './helpers';
-import { constants } from "@extension";
+import * as constants from "@extension";
 import { ProfileHelper } from './helpers/profile.helper';
 
 // this method is called when your extension is activated
@@ -33,7 +33,7 @@ export function deactivate() {}
 async function saveProfileHandler() {
    let helper = new ProfileHelper();
 
-   await helper.saveProfile("");
+   helper.saveProfile("Test");
 }
 
 async function loadProfileHandler() {
