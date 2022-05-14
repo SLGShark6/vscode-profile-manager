@@ -118,18 +118,18 @@ export class ProfileHelper {
     * want cleaned from children
     */
    public cleanupChildProfiles(profile: Profile) {
-      // Iterate over profile settings
-      forOwn(profile.settings, (value, key) => {
-         // Remove any setting that matches this key, value in this child or
-         // descendant (will stop once it encounters a new value at the same
-         // key) 
-         this.cleanChildMatchingSetting(profile, key, value);
-      });
-
       // Iterate over this profiles direct children
       forOwn(profile.children, (childProfile: Profile) => {
          // Traverse the entire descendant tree removing duplicated extension ID's
          this.cleanChildMatchingExtensions(childProfile, profile.extensions);
+
+         // Iterate over profile settings
+         forOwn(profile.settings, (value, key) => {
+            // Remove any setting that matches this key, value in this child or
+            // descendant (will stop once it encounters a new value at the same
+            // key) 
+            this.cleanChildMatchingSetting(childProfile, key, value);
+         });
       });
    }
 
