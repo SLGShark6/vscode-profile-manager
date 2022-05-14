@@ -15,6 +15,8 @@ export class ProfileHelper {
       this._extensionHelper = new ExtensionHelper();
    }
 
+   // ToDo clean this up and reduce the number processing cost of these functions
+
    /**
     * Copies the current user settings.json (ignoring this extensions config
     * and any unmodified parent configs) and saves it in this extensions
@@ -34,10 +36,16 @@ export class ProfileHelper {
 
       // Get the current user settings minus this extension's configs
       const userConfig = omit(await this._configHelper.getUserConfig(), values(configurationKeys));
+
+      // ToDo extensions are not being listed properly, only this extension id is being saved
       // Get a list of the current extensions installed
-      const extensionIds = transform(extensions.all, (result: Array<string>, current: Extension<unknown>) => {
-         result.push(current.id);
-      });
+      const extensionIds = extensions.all
+         .filter((extension) => {
+            return !extension.packageJSON.isBuiltin;
+         })
+         .map((value) => {
+            return value.id;
+         });
 
       // Holds the configs of parent profiles up until the final profile
       let mergedParentConfigs: Dictionary = {};
