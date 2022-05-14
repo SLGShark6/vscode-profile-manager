@@ -5,3 +5,4 @@ export * from './code-config.type';
 export * from './update-mode.enum';
 export * from './flatten-object.function';
 export * from './map-object-paths.function';
+export * from './profile-stack.type';
