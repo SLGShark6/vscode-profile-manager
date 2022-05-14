@@ -18,5 +18,5 @@ export type Profile = {
     * Optional child profiles that extend on the base config stored in this
     * profile
     */
-   children: Dictionary<string, Profile>
+   children?: Dictionary<string, Profile>
 };
