@@ -1,7 +1,25 @@
-import { Dictionary, Profile, ProfileStack, UpdateMode } from "@extension/utilities";
-import { ConfigurationTarget, Extension, extensions, workspace } from 'vscode';
+import { extensions, workspace } from 'vscode';
+import {
+   difference,
+   forOwn,
+   get,
+   has,
+   isEmpty,
+   isEqual,
+   isUndefined,
+   join,
+   last,
+   omit,
+   pull,
+   split,
+   take,
+   union,
+   unset,
+   values
+} from "lodash";
+
+import { Dictionary, Profile, ProfileStack } from "@extension/utilities";
 import { ConfigHelper, ExtensionHelper } from "@extension/helpers";
-import { difference, forOwn, has, isEmpty, isEqual, join, last, omit, pull, split, take, transform, union, unset, values, without } from "lodash";
 import { configurationKeys } from "@extension/constants";
 
 export class ProfileHelper {
@@ -15,8 +33,6 @@ export class ProfileHelper {
       this._extensionHelper = new ExtensionHelper();
    }
 
-   // ToDo clean this up and reduce the number processing cost of these functions
-
    /**
     * Copies the current user settings.json (ignoring this extensions config
     * and any unmodified parent configs) and saves it in this extensions
@@ -29,6 +45,8 @@ export class ProfileHelper {
    public async saveProfile(path: string) {
       // Split the provided path by dot notation
       const splitPath = split(path, '.');
+      const parentPaths = take(splitPath, splitPath.length - 1);
+      const profileKey = splitPath[splitPath.length - 1];
 
       // Get the current extension config to update with the profile
       const extensionConfig = await this._extensionHelper.getConfig();
@@ -47,80 +65,82 @@ export class ProfileHelper {
             return value.id;
          });
 
-      // Holds the configs of parent profiles up until the final profile
-      let mergedParentConfigs: Dictionary = {};
-      let mergedParentExtensionIds: Array<string> = [];
+      // Holds the spot where the new profile should be saved
+      let profileStorage: Dictionary<string, Profile>;
+      // Holds extensions unique to this profile
+      let uniqueExtensionIds: Array<string>;
+      // Holds the configs unique to this profile
+      let uniqueConfig: Dictionary;
 
-      // Get the first profile in the chain
-      let lastProfile: Profile = profiles[splitPath[0]];
-      // Store the reference to where the new profile needs to be saved
-      let profileStorage = profiles;
+      // If there is more than one node (i.e. parent profiles)
+      if (splitPath.length > 1) {
+         // Get the direct parent profile reference of the profile being saved
+         const lastParentProfile = get(profiles, join(parentPaths, ".children."));
 
-      // Iterate over the paths to read the children at each, skipping the
-      // first since that would be in the ProfilesList config item, and not in
-      // a children sub object.
-      for (let i = 1; i < splitPath.length; i++) {
-         // If the last profile was not set in the previous iteration
-         if (isEmpty(lastProfile)) {
-            // Get the current path being iterated
-            const currentPath = join(take(splitPath, i + 1), ".");
-            // Throw an error
-            throw new Error(`Profile item at path "${currentPath}" does not exist.`)
-         }
-
-         // Merge in the profile's settings from the previous iteration
-         mergedParentConfigs = this._configHelper.mergeConfigs(mergedParentConfigs, lastProfile.settings);
-         mergedParentExtensionIds = union(mergedParentExtensionIds, lastProfile.extensions);
-
-         // If the profile doesn't have a children object set
-         if (isEmpty(lastProfile.children)) {
+         // If the parent of the profile being saved does not have a children
+         // property
+         if (isUndefined(lastParentProfile.children)) {
             // Set one
-            lastProfile.children = {};
+            lastParentProfile.children = {};
          }
 
-         // Get the children's object reference of the previous profile to
-         // store the new profile in
-         profileStorage = lastProfile.children!;
+         // Set the profile storage to children object of the direct parent
+         profileStorage = lastParentProfile.children;
 
-         // Update last profile to the current iteration (final one will be the
-         // path node that needs to be saved, which may or may not exist)
-         lastProfile = lastProfile.children![splitPath[i]];
+
+         // Get the merged profile config of the parent profiles (if any)
+         let mergedParentsProfile = this.getProfile(join(parentPaths, "."));
+
+         // Get the extension ID's unique to this profile
+         uniqueExtensionIds = difference(extensionIds, mergedParentsProfile.extensions)
+
+         // Initialize unique config
+         uniqueConfig = {};
+
+         // Iterate over the user config properties
+         forOwn(userConfig, (value, key) => {
+            // If the merged parent config doesn't have the configuration value OR
+            // the value in this config is different than the merged parent's
+            if (!has(mergedParentsProfile.settings, key) || !isEqual(value, mergedParentsProfile.settings[key])) {
+               // Add it to the list of unique values
+               uniqueConfig[key] = value;
+            }
+         });
       }
+      // Otherwise just a single node
+      else {
+         // Set profile storage to the profiles list settings object
+         profileStorage = profiles;
+
+         // Set the unique settings for this profile to environment settings
+         uniqueConfig = userConfig;
+         uniqueExtensionIds = extensionIds;
+      }
+
+
+      // Attempt to get an existing profile object of the profile to be saved 
+      // (if there is one)
+      let profileToSave = profileStorage[profileKey];
 
       // If the profile at the final path node is empty, it must be a new
       // profile
-      if (isEmpty(lastProfile)) {
+      if (isEmpty(profileToSave)) {
          // So set it up with defaults
-         lastProfile = this.getDefaultProfileSettings();
+         profileToSave = this.getDefaultProfileSettings();
       }
 
-      // Holds the configs unique to this profile
-      const uniqueConfig: Dictionary = {};
-
-      // Iterate over the user config properties
-      forOwn(userConfig, (value, key) => {
-         // If the merged parent config doesn't have the configuration value OR
-         // the value in this config is different than the merged parent's
-         if (!has(mergedParentConfigs, key) || !isEqual(value, mergedParentConfigs[key])) {
-            // Add it to the list of unique values
-            uniqueConfig[key] = value;
-         }
-      });
-
-      // Holds extensions unique to this profile
-      const uniqueExtensionIds = difference(extensionIds, mergedParentExtensionIds)
 
       // Update profile with the unique items
-      lastProfile.settings = uniqueConfig;
-      lastProfile.extensions = uniqueExtensionIds;
+      profileToSave.settings = uniqueConfig;
+      profileToSave.extensions = uniqueExtensionIds;
 
       // Store the new/ updated profile under the final key in the supplied
       // path
-      profileStorage[last(splitPath)!] = lastProfile;
+      profileStorage[last(splitPath)!] = profileToSave;
 
       // Cleanup any now duplicated settings and extensions inside child
       // profiles (if any)
-      this.cleanupChildProfiles(lastProfile);
+      this.cleanupChildProfiles(profileToSave);
 
       // Update the extension config with this modified config
       await this._extensionHelper.setConfig(extensionConfig);
@@ -234,6 +254,18 @@ export class ProfileHelper {
    }
 
    /**
+    * Gets a Profile object with default values and only required fields set.
+    * 
+    * @returns - Profile with default values
+    */
+   public getDefaultProfileSettings(): Profile {
+      return {
+         settings: {},
+         extensions: []
+      };
+   }
+
+   /**
     * Gets the unflattened limb pointed to by the path from the profiles list tree.
     * 
     * @param path 
@@ -286,14 +318,12 @@ export class ProfileHelper {
       return profileStack;
    }
 
-   public getDefaultProfileSettings(): Profile {
-      return {
-         settings: {},
-         extensions: [],
-         children: {}
-      };
-   }
-
+   /**
+    * Gets a ProfileStack object with default values and only required fields
+    * set.
+    * 
+    * @returns - ProfileStack with default values
+    */
    public getDefaultProfileStack(): ProfileStack {
       return {
          id: "",
