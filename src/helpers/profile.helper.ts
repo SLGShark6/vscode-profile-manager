@@ -142,6 +142,9 @@ export class ProfileHelper {
       // profiles (if any)
       this.cleanupChildProfiles(profileToSave);
 
+      // Ensure this profile set as the active one
+      extensionConfig.ActiveProfile = path;
+
       // Update the extension config with this modified config
       await this._extensionHelper.setConfig(extensionConfig);
    }
