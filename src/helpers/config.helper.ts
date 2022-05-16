@@ -5,12 +5,17 @@ import {
    Range,
    Position
 } from 'vscode';
-import { assign } from 'lodash';
+import { assign, defaults, pick, values } from 'lodash';
 import * as JSONC from 'jsonc-parser';
 
-import { UpdateMode, Dictionary } from '@extension/utilities';
+import { UpdateMode, Dictionary, ExtensionConfig, Profile } from '@extension/utilities';
+import { configurationKeys } from '@extension/constants';
 
 export class ConfigHelper {
+
+   // ToDo do not close the editor until everything using it is done (look at RXjs)
+   // OR
+   // Find a better way of accessing the settings.json (perhaps a custom editor)
 
    /**
     * Ctor
@@ -135,5 +140,64 @@ export class ConfigHelper {
     */
    public mergeConfigs(configItem: Dictionary, ...mergeItems: Array<Dictionary>): Dictionary {
       return assign({}, configItem, ...mergeItems);
+   }
+
+
+   /**
+    * Get a mapped ExtensionConfig object from the User settings values.
+    * 
+    * @returns Mapped configuration object with defaults where necessary
+    */
+    public async getExtensionConfig(): Promise<ExtensionConfig> {
+      // Get the raw user config from the settings file
+      const userConfig = await this.getUserConfig();
+
+      // Get only the values pertaining to this extension's config
+      const extensionConfig = pick(userConfig, values(configurationKeys));
+
+      // Map the raw config to a defined type, applying default values where
+      // necessary
+      const mappedConfig: ExtensionConfig = defaults({
+         ActiveProfile: extensionConfig[configurationKeys.ActiveProfile] as string,
+         ProfilesList: extensionConfig[configurationKeys.ProfilesList] as Dictionary<string, Profile>,
+         IgnoreExtensions: extensionConfig[configurationKeys.IgnoreExtensions] as Array<string>,
+         IgnoreSettings: extensionConfig[configurationKeys.IgnoreSettings] as Array<string>
+      }, this.getDefaultExtensionConfig());
+
+      // Return the mapped config
+      return mappedConfig;
+   }
+
+   /**
+    * Updates this extension's user settings with the values in the passed
+    * object.
+    * 
+    * @param newConfig - New extension config to save
+    */
+   public async setExtensionConfig(newConfig: ExtensionConfig) {
+      // Map the config object to keys used in the settings file
+      const mappedConfig = {
+         [configurationKeys.ActiveProfile]: newConfig.ActiveProfile,
+         [configurationKeys.ProfilesList]: newConfig.ProfilesList,
+         [configurationKeys.IgnoreExtensions]: newConfig.IgnoreExtensions,
+         [configurationKeys.IgnoreExtensions]: newConfig.IgnoreSettings
+      }
+
+      // Merge the new extension config items into the user settings
+      await this.setUserConfig(mappedConfig, UpdateMode.Merge);
+   }
+
+   /**
+    * Get an ExtensionConfig value with default property values applied.
+    * 
+    * @returns Default ExtensionConfig object
+    */
+   public getDefaultExtensionConfig(): ExtensionConfig {
+      return {
+         ActiveProfile: "",
+         ProfilesList: {},
+         IgnoreExtensions: [],
+         IgnoreSettings: []
+      }
    }
 }

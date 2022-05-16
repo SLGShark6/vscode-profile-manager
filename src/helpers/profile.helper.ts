@@ -49,7 +49,7 @@ export class ProfileHelper {
       const profileKey = splitPath[splitPath.length - 1];
 
       // Get the current extension config to update with the profile
-      const extensionConfig = await this._extensionHelper.getConfig();
+      const extensionConfig = await this._configHelper.getExtensionConfig();
       const profiles = extensionConfig.ProfilesList
 
       // Get the current user settings minus this extension's configs
@@ -146,7 +146,7 @@ export class ProfileHelper {
       extensionConfig.ActiveProfile = path;
 
       // Update the extension config with this modified config
-      await this._extensionHelper.setConfig(extensionConfig);
+      await this._configHelper.setExtensionConfig(extensionConfig);
    }
 
    /**
