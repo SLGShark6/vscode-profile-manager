@@ -146,16 +146,27 @@ export class ConfigHelper {
 
 
    /**
+    * Gets the portion of the raw user config object pertaining to this
+    * extension's settings.
+    * 
+    * @returns - Object with this extension's user config value
+    */
+   public async getRawExtensionConfig(): Promise<Dictionary> {
+      // Get the raw user config from the settings file
+      const userConfig = await this.getUserConfig();
+
+      // Return only the values pertaining to this extension's config
+      return pick(userConfig, values(configurationKeys));
+   }
+
+   /**
     * Get a mapped ExtensionConfig object from the User settings values.
     * 
     * @returns Mapped configuration object with defaults where necessary
     */
     public async getExtensionConfig(): Promise<ExtensionConfig> {
-      // Get the raw user config from the settings file
-      const userConfig = await this.getUserConfig();
-
-      // Get only the values pertaining to this extension's config
-      const extensionConfig = pick(userConfig, values(configurationKeys));
+      // Get the raw extension config values 
+      const extensionConfig = await this.getRawExtensionConfig();
 
       // Map the raw config to a defined type, applying default values where
       // necessary
