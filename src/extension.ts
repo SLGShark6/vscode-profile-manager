@@ -5,7 +5,6 @@ import { container } from "tsyringe";
 // The module 'vscode' contains the VS Code extensibility API
 import * as vscode from 'vscode';
 
-
 import * as constants from "@extension";
 import { ConfigHelper, ExtensionHelper, ProfileHelper } from '@extension/helpers';
 
