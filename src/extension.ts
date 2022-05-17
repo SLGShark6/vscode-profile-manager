@@ -5,9 +5,9 @@ import { container } from "tsyringe";
 // The module 'vscode' contains the VS Code extensibility API
 import * as vscode from 'vscode';
 
-import { ConfigHelper, ExtensionHelper } from './helpers';
+
 import * as constants from "@extension";
-import { ProfileHelper } from './helpers/profile.helper';
+import { ConfigHelper, ExtensionHelper, ProfileHelper } from '@extension/helpers';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
