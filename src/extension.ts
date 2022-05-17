@@ -12,14 +12,12 @@ import { ConfigHelper, ExtensionHelper, ProfileHelper } from '@extension/helpers
 // your extension is activated the very first time the command is executed
 export function activate(context: ExtensionContext) {
 
+   // Register all services and types to the DI container
    container.registerSingleton<ConfigHelper>(ConfigHelper);
    container.registerSingleton<ProfileHelper>(ProfileHelper);
    container.registerSingleton<ExtensionHelper>(ExtensionHelper);
 
    container.registerInstance<ExtensionContext>("ExtensionContext", context);
-   
-
-   // let helper = container.resolve<ProfileHelper>(ProfileHelper);
 
 
    // ToDo wrap this conditionally with whether this is startup
