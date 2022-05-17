@@ -1,3 +1,4 @@
+import { injectable } from 'tsyringe';
 import {
    workspace,
    commands,
@@ -11,6 +12,7 @@ import * as JSONC from 'jsonc-parser';
 import { UpdateMode, Dictionary, ExtensionConfig, Profile } from '@extension/utilities';
 import { configurationKeys } from '@extension/constants';
 
+@injectable()
 export class ConfigHelper {
 
    // ToDo do not close the editor until everything using it is done (look at RXjs)

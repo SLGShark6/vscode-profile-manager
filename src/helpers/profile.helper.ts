@@ -1,3 +1,4 @@
+import { injectable } from 'tsyringe';
 import { extensions, workspace } from 'vscode';
 import {
    difference,
@@ -22,16 +23,16 @@ import { Dictionary, Profile, ProfileStack } from "@extension/utilities";
 import { ConfigHelper, ExtensionHelper } from "@extension/helpers";
 import { configurationKeys } from "@extension/constants";
 
+@injectable()
 export class ProfileHelper {
 
-   private _configHelper: ConfigHelper;
-
-   private _extensionHelper: ExtensionHelper;
-
-   constructor() {
-      this._configHelper = new ConfigHelper();
-      this._extensionHelper = new ExtensionHelper();
-   }
+   /**
+    * Ctor
+    */
+   constructor(
+      private _configHelper: ConfigHelper,
+      private _extensionHelper: ExtensionHelper
+   ) { }
 
    /**
     * Copies the current user settings.json (ignoring this extensions config
