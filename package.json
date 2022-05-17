@@ -86,6 +86,8 @@
 		"webpack-cli": "^4.9.2"
 	},
 	"dependencies": {
-		"jsonc-parser": "^3.0.0"
+		"core-js": "^3.22.5",
+		"jsonc-parser": "^3.0.0",
+		"tsyringe": "^4.6.0"
 	}
 }
