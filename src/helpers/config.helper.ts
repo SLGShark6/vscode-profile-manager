@@ -19,6 +19,9 @@ export class ConfigHelper {
    // OR
    // Find a better way of accessing the settings.json (perhaps a custom editor)
 
+   // ToDo add get and set RawConfig functions and have the get and set User Config
+   // functions only set the portion not pertaining to the extension config
+
    /**
     * Ctor
     */
