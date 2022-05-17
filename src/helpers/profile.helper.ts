@@ -56,16 +56,9 @@ export class ProfileHelper {
       // Get the current user settings minus this extension's configs
       const userConfig = omit(await this._configHelper.getUserConfig(), values(configurationKeys));
 
-      // ToDo extensions are not being listed properly, only this extension id is being saved
       // Get a list of the current extensions installed
-      const extensionIds = extensions.all
-         .filter((extension) => {
-            return !extension.packageJSON.isBuiltin;
-         })
-         .map((value) => {
-            return value.id;
-         });
-
+      const extensionIds = this._extensionHelper.getInstalledExtensionIds();
+      
       // Holds the spot where the new profile should be saved
       let profileStorage: Dictionary<string, Profile>;
       // Holds extensions unique to this profile
