@@ -1,5 +1,5 @@
 import { injectable } from 'tsyringe';
-import { extensions, workspace } from 'vscode';
+import { commands, window, workspace } from 'vscode';
 import {
    difference,
    forOwn,
@@ -10,13 +10,15 @@ import {
    isUndefined,
    join,
    last,
+   merge,
    omit,
    pull,
    split,
    take,
    union,
    unset,
-   values
+   values,
+   without
 } from "lodash";
 
 import { Dictionary, Profile, ProfileStack } from "@extension/utilities";
@@ -58,7 +60,7 @@ export class ProfileHelper {
 
       // Get a list of the current extensions installed
       const extensionIds = this._extensionHelper.getInstalledExtensionIds();
-      
+
       // Holds the spot where the new profile should be saved
       let profileStorage: Dictionary<string, Profile>;
       // Holds extensions unique to this profile
@@ -329,8 +331,52 @@ export class ProfileHelper {
       };
    }
 
+   /**
+    * Destructively attempts to load in the profile set at the specified path
+    * 
+    * @param path - Dot notated path of the profile to load
+    */
    public async loadProfile(path: string) {
-      let helper = new ConfigHelper();
+      // Get the compiled profile configs
+      const profile = this.getProfile(path);
+
+      // Get the current list of installed extension ID's
+      let currentExtensionIds = this._extensionHelper.getInstalledExtensionIds();
+
+      // Get any installed extensions that are NOT in the profile to load
+      const extensionsNotInProfile = without(currentExtensionIds, ...profile.extensions);
+      // Uninstall those extensions not in the profile
+      await this._extensionHelper.uninstallExtensions(extensionsNotInProfile);
+
+      // Get the updated list of installed extensions
+      currentExtensionIds = this._extensionHelper.getInstalledExtensionIds(); 
+
+      // Get any extensions in the profile that aren't currently installed
+      const notInstalledExtensions = without(profile.extensions, ...currentExtensionIds);
+      // ToDo: Handle installation failure
+      // Install the not installed extensions
+      await this._extensionHelper.installExtensions(notInstalledExtensions);
+
+      // Get the raw config for this extension
+      const currentRawExtensionConfig = await this._configHelper.getRawExtensionConfig();
+
+      // Merge the raw extension config with the raw settings of the profile
+      const mergedRawConfig = merge({}, profile.settings, currentRawExtensionConfig);
+
+      // Update the user config with the merged extension and profile settings
+      await this._configHelper.setUserConfig(mergedRawConfig);
+
+      const action = "Reload";
+
+      window.showInformationMessage(
+         `Reload window to ensure profile changes to take effect.`,
+         action
+      )
+         .then(selectedAction => {
+            if (selectedAction === action) {
+               commands.executeCommand('workbench.action.reloadWindow');
+            }
+         });
    }
 
 
