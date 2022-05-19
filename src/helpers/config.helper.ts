@@ -59,18 +59,8 @@ export class ConfigHelper {
     * @see mergeConfigs - on how merges are handled
     * 
     * @param settings Settings object to overwrite the settings.json file with
-    * @param updateMode Whether to merge or overwrite the settings.json file
     */
-   public async setRawConfig(settings: Dictionary, updateMode: UpdateMode = UpdateMode.Merge) {
-      
-      // If settings should be merged
-      if (updateMode === UpdateMode.Merge) {
-         // Grab the current user config
-         const currentSettings = await this.getRawConfig();
-
-         // Merge configs
-         settings = this.mergeConfigs(currentSettings, settings)
-      }
+   public async setRawConfig(settings: Dictionary) {
       
       // Open the user settings.json file in a new editor
       await commands.executeCommand("workbench.action.openSettingsJson");
@@ -129,17 +119,23 @@ export class ConfigHelper {
     * @param updateMode Whether to merge or overwrite the settings.json file
     */
    public async setUserConfig(settings: Dictionary, updateMode: UpdateMode = UpdateMode.Merge) {
+      // If settings should be merged
+      if (updateMode === UpdateMode.Merge) {
+         // Grab the current user config
+         const currentSettings = await this.getRawConfig();
+
+         // Merge configs
+         settings = this.mergeConfigs(currentSettings, settings)
+      }
+
       // Get the raw config for this extension
       const currentRawExtensionConfig = await this.getRawExtensionConfig();
 
       // Merge the raw extension config with the raw settings to save
-      const mergedRawConfig = merge({}, settings, currentRawExtensionConfig);
+      const mergedRawConfig = assign({}, settings, currentRawExtensionConfig);
 
-      // ToDo change merge to only merge the user settings, because merging may allow deep merging in future iterations
-      // and that could break extension functionalities
-
-      // Update the raw config
-      await this.setRawConfig(mergedRawConfig, updateMode);
+      // Update the raw config, replacing completely
+      await this.setRawConfig(mergedRawConfig);
    }
 
 
@@ -237,8 +233,14 @@ export class ConfigHelper {
          [configurationKeys.IgnoreExtensions]: newConfig.IgnoreSettings
       }
 
+      // Get the current running raw config object
+      const currentRawConfig = await this.getRawConfig();
+
+      // Merge in the new extension settings to the current raw config
+      const mergedRawConfig = assign({}, currentRawConfig, mappedConfig);
+
       // Merge the new extension config items into the user settings
-      await this.setRawConfig(mappedConfig, UpdateMode.Merge);
+      await this.setRawConfig(mergedRawConfig);
    }
 
    /**
