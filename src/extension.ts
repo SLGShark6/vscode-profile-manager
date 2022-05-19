@@ -44,11 +44,11 @@ export function deactivate() {}
 async function saveProfileHandler() {
    let helper = container.resolve<ProfileHelper>(ProfileHelper);
 
-   helper.saveProfile("Test");
+   await helper.saveProfile("Test");
 }
 
 async function loadProfileHandler() {
    let helper = container.resolve<ProfileHelper>(ProfileHelper);
 
-   await helper.loadProfile("");
+   await helper.loadProfile("Test");
 }
