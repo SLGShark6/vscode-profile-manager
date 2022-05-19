@@ -6,7 +6,7 @@ import {
    Range,
    Position
 } from 'vscode';
-import { assign, defaults, pick, values } from 'lodash';
+import { assign, defaults, merge, omit, pick, values } from 'lodash';
 import * as JSONC from 'jsonc-parser';
 
 import { UpdateMode, Dictionary, ExtensionConfig, Profile } from '@extension/utilities';
@@ -32,7 +32,7 @@ export class ConfigHelper {
     * 
     * @returns Parsed object from the user settings.json file
     */
-   public async getUserConfig(): Promise<Dictionary> {
+   public async getRawConfig(): Promise<Dictionary> {
       // Open the user settings.json file in a new editor
       await commands.executeCommand("workbench.action.openSettingsJson");
 
@@ -61,12 +61,12 @@ export class ConfigHelper {
     * @param settings Settings object to overwrite the settings.json file with
     * @param updateMode Whether to merge or overwrite the settings.json file
     */
-   public async setUserConfig(settings: Dictionary, updateMode: UpdateMode = UpdateMode.Merge) {
+   public async setRawConfig(settings: Dictionary, updateMode: UpdateMode = UpdateMode.Merge) {
       
       // If settings should be merged
       if (updateMode === UpdateMode.Merge) {
          // Grab the current user config
-         const currentSettings = await this.getUserConfig();
+         const currentSettings = await this.getRawConfig();
 
          // Merge configs
          settings = this.mergeConfigs(currentSettings, settings)
@@ -104,6 +104,44 @@ export class ConfigHelper {
       // Close the active settings.json editor
       await commands.executeCommand("workbench.action.closeActiveEditor");
    }
+
+
+   /**
+    * Gets the raw parsed settings object from settings.json, excluding any
+    * settings values pertaining to this extension's settings.
+    * 
+    * @returns Settings object parsed from settings.json
+    */
+   public async getUserConfig(): Promise<Dictionary> {
+      // Get the raw settings object
+      let rawSettings = await this.getRawConfig();
+
+      // Return the settings object with this extensions configuration keys
+      // omitted
+      return omit(rawSettings, values(configurationKeys));
+   }
+
+   /**
+    * Writes a passed settings object directly to the user settings.json file,
+    * without overwriting or clearing out this extension's settings.
+    * 
+    * @param settings Settings object to overwrite the settings.json file with
+    * @param updateMode Whether to merge or overwrite the settings.json file
+    */
+   public async setUserConfig(settings: Dictionary, updateMode: UpdateMode = UpdateMode.Merge) {
+      // Get the raw config for this extension
+      const currentRawExtensionConfig = await this.getRawExtensionConfig();
+
+      // Merge the raw extension config with the raw settings to save
+      const mergedRawConfig = merge({}, settings, currentRawExtensionConfig);
+
+      // ToDo change merge to only merge the user settings, because merging may allow deep merging in future iterations
+      // and that could break extension functionalities
+
+      // Update the raw config
+      await this.setRawConfig(mergedRawConfig, updateMode);
+   }
+
 
    /**
     * Merges configs left to right, only accounting for surface level keys. If
@@ -156,7 +194,7 @@ export class ConfigHelper {
     */
    public async getRawExtensionConfig(): Promise<Dictionary> {
       // Get the raw user config from the settings file
-      const userConfig = await this.getUserConfig();
+      const userConfig = await this.getRawConfig();
 
       // Return only the values pertaining to this extension's config
       return pick(userConfig, values(configurationKeys));
@@ -200,7 +238,7 @@ export class ConfigHelper {
       }
 
       // Merge the new extension config items into the user settings
-      await this.setUserConfig(mappedConfig, UpdateMode.Merge);
+      await this.setRawConfig(mappedConfig, UpdateMode.Merge);
    }
 
    /**

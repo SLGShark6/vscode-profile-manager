@@ -56,7 +56,7 @@ export class ProfileHelper {
       const profiles = extensionConfig.ProfilesList
 
       // Get the current user settings minus this extension's configs
-      const userConfig = omit(await this._configHelper.getUserConfig(), values(configurationKeys));
+      const userConfig = await this._configHelper.getUserConfig();
 
       // Get a list of the current extensions installed
       const extensionIds = this._extensionHelper.getInstalledExtensionIds();
@@ -357,14 +357,9 @@ export class ProfileHelper {
       // Install the not installed extensions
       await this._extensionHelper.installExtensions(notInstalledExtensions);
 
-      // Get the raw config for this extension
-      const currentRawExtensionConfig = await this._configHelper.getRawExtensionConfig();
-
-      // Merge the raw extension config with the raw settings of the profile
-      const mergedRawConfig = merge({}, profile.settings, currentRawExtensionConfig);
-
-      // Update the user config with the merged extension and profile settings
-      await this._configHelper.setUserConfig(mergedRawConfig);
+      // Update the user config with the profile settings (excluding this
+      // extension's settings)
+      await this._configHelper.setUserConfig(profile.settings);
 
       const action = "Reload";
 
