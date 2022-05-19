@@ -1,6 +1,6 @@
 import { isEqual } from "lodash";
 import { inject, injectable } from "tsyringe";
-import { Extension, ExtensionContext, extensions } from "vscode";
+import { commands, Extension, ExtensionContext, extensions } from "vscode";
 
 @injectable()
 export class ExtensionHelper {
@@ -43,11 +43,31 @@ export class ExtensionHelper {
          });
    }
 
-   public installExtensions(extensionIds: Array<string>) {
-
+   /**
+    * Attempts to install the extensions by the ID's provided in the passed
+    * extension ID list.
+    * 
+    * @param extensionIds - List of extension ID's for extensions to install
+    */
+   public async installExtensions(extensionIds: Array<string>) {
+      // Iterate over extension ID's
+      for (const extensionId of extensionIds) {
+         // Call vscode built-in command to install the extension
+         await commands.executeCommand("workbench.extensions.installExtension", extensionId);
+      }
    }
 
-   public uninstallExtensions(extensionIds: Array<string>) {
-
+   /**
+    * Attempts to uninstall the extensions by the list of extension ID's
+    * provided.
+    * 
+    * @param extensionIds - List of extension ID's for extensions to uninstall
+    */
+   public async uninstallExtensions(extensionIds: Array<string>) {
+      // Iterate over extension ID's
+      for (const extensionId of extensionIds) {
+         // Call vscode built-in command to uninstall the extension
+         await commands.executeCommand("workbench.extensions.uninstallExtension", extensionId);
+      }
    }
 }
