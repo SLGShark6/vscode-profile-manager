@@ -1,9 +1,10 @@
-import { inject } from "tsyringe";
+import { inject, injectable } from "tsyringe";
 import { commands, ExtensionContext } from "vscode";
 
 import { ConfigHelper, ProfileHelper } from "@extension/helpers";
 import * as constants from "@extension";
 
+@injectable()
 export class CommandHelper {
 
    /**
