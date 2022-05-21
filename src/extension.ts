@@ -11,6 +11,9 @@ import { CommandHelper, ConfigHelper, ExtensionHelper, ProfileHelper } from '@ex
 // your extension is activated the very first time the command is executed
 export function activate(context: ExtensionContext) {
 
+   // ToDo ensure that previous registrations are cleared, maybe modify the lifecycles of these,
+   // because services might be registered on top of previous registrations every call
+
    // Register all services and types to the DI container
    container.registerInstance<ExtensionContext>("ExtensionContext", context);
    
