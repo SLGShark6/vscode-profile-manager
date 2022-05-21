@@ -14,9 +14,18 @@ export const displayName = "Profile Manager";
  * Keyed list of all registered configuration contributions for the extension
  */
 export const configurationKeys
-   : Readonly<Dictionary<"ActiveProfile" | "ProfilesList" | "IgnoreExtensions" | "IgnoreSettings", string>> = {
+   : Readonly<Dictionary<'ActiveProfile' | 'ProfilesList' | 'IgnoreExtensions' | 'IgnoreSettings', string>> = {
    ActiveProfile: `${internalName}.active-profile`,
    ProfilesList: `${internalName}.profiles`,
    IgnoreExtensions: `${internalName}.ignore-extensions`,
    IgnoreSettings: `${internalName}.ignore-settings`
+}
+
+/**
+ * Keyed list of all registered command contributions for the extension
+ */
+export const commandKeys
+   : Readonly<Dictionary<'saveProfile' | 'loadProfile', string>> = {
+   saveProfile: `${internalName}.saveProfile`,
+   loadProfile: `${internalName}.loadProfile`
 }
