@@ -14,7 +14,7 @@
 		"commands": [
 			{
 				"command": "profile-manager.saveProfile",
-				"title": "Save Current Profile"
+				"title": "Save Profile"
 			},
 			{
 				"command": "profile-manager.loadProfile",
