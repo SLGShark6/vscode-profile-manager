@@ -12,12 +12,12 @@ import { CommandHelper, ConfigHelper, ExtensionHelper, ProfileHelper } from '@ex
 export function activate(context: ExtensionContext) {
 
    // Register all services and types to the DI container
+   container.registerInstance<ExtensionContext>("ExtensionContext", context);
+   
    container.registerSingleton<CommandHelper>(CommandHelper);
    container.registerSingleton<ConfigHelper>(ConfigHelper);
    container.registerSingleton<ProfileHelper>(ProfileHelper);
    container.registerSingleton<ExtensionHelper>(ExtensionHelper);
-
-   container.registerInstance<ExtensionContext>("ExtensionContext", context);
 
    // Get the command helper
    const commandHelper = container.resolve<CommandHelper>(CommandHelper);
