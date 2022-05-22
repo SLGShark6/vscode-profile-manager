@@ -278,18 +278,18 @@ export class ProfileHelper {
 
       // Initialize the object containing the profiles to get the next node
       // from, with the list of top level profiles
-      let profilesObject = workspace.getConfiguration()
+      let profileStorage = workspace.getConfiguration()
          .get(configurationKeys.ProfilesList) as Dictionary<string, Profile>;
 
       // If no profiles exist
-      if (isEmpty(profilesObject)) {
+      if (isEmpty(profileStorage)) {
          throw new Error("No profiles exist to get.");
       }
 
       // Iterate over the nodes in the path
       for (let i = 0; i < splitPath.length; i++) {
          // Get the current profile node in the chain
-         const currentNode = profilesObject[splitPath[i]];
+         const currentNode = profileStorage[splitPath[i]];
 
          // If there is no profile at the current path node
          if (isEmpty(currentNode)) {
@@ -304,7 +304,7 @@ export class ProfileHelper {
 
          // Set the next object to get the next node from to the children
          // object of this node (if it has one)
-         profilesObject = currentNode.children!;
+         profileStorage = currentNode.children!;
       }
 
       // Return the found node
