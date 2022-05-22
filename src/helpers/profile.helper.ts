@@ -253,6 +253,17 @@ export class ProfileHelper {
    }
 
    /**
+    * Gets the root profile storage object from the current running config.
+    * 
+    * @returns - Keyed object containing top level Profile objects
+    */
+   public getProfileStorage(): Dictionary<string, Profile> {
+      // Return the profile storage object from the workspace config
+      return workspace.getConfiguration()
+         .get(configurationKeys.ProfilesList) as Dictionary<string, Profile>
+   }
+
+   /**
     * Gets the profile/ children storage object at the path specified. Provides
     * the top level profile storage if the path is empty.
     * 
@@ -268,8 +279,7 @@ export class ProfileHelper {
       // If the path is empty
       if (isEmpty(path)) {
          // Provide the top level profile storage as children object
-         childrenStorage = workspace.getConfiguration()
-            .get(configurationKeys.ProfilesList) as Dictionary<string, Profile>;
+         childrenStorage = this.getProfileStorage();
       }
       // Otherwise
       else {
@@ -312,8 +322,7 @@ export class ProfileHelper {
 
       // Initialize the object containing the profiles to get the next node
       // from, with the list of top level profiles
-      let profileStorage = workspace.getConfiguration()
-         .get(configurationKeys.ProfilesList) as Dictionary<string, Profile>;
+      let profileStorage = this.getProfileStorage();
 
       // If no profiles exist
       if (isEmpty(profileStorage)) {
