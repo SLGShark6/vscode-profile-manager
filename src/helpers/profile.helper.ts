@@ -252,8 +252,7 @@ export class ProfileHelper {
       };
    }
 
-   // ToDo add a getProfileNodeList to get a list of profile nodes and reuse in all functions
-   // that need to get a single profile, combined profile, or profile stack
+   // ToDo update iterative functions to use the new fetProfileNodeList function internally
 
    /**
     * Gets the exact profile object contained at each node in the path
