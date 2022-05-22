@@ -225,7 +225,7 @@ export class ProfileHelper {
     * 
     * @param path - The path to get the flattened profile from
     */
-   public getProfile(path: string): Profile {
+   public getProfile(path: string): Profile { // ToDo remove children property from return type def
       // Get the profile stack at the path passed
       const profileStack = this.getProfileStack(path);
 
