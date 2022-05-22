@@ -253,6 +253,63 @@ export class ProfileHelper {
    }
 
    /**
+    * Gets the exact profile object at the path specified with ONLY the
+    * settings contained in that node (including children).
+    * 
+    * @param path - Path to attempt to get the profile node for
+    * @returns - Profile node object at path specified
+    * @throws Error if a profile doesn't exist at any of the nodes in the path
+    */
+   public getProfileNode(path: string): Profile {
+      // Split the provided path by dot notation
+      const splitPath = split(path, '.');
+
+      // Get the current profiles list as the initial list to pull the next 
+      // node from
+      let profilesList = workspace.getConfiguration()
+         .get(configurationKeys.ProfilesList) as Dictionary<string, Profile>;
+
+      // If no profiles exist
+      if (isEmpty(profilesList)) {
+         throw new Error("No profiles exist to get.");
+      }
+
+      // ToDo add check and error throw if path is empty instead of passing back a default object
+      // Initialize the profile node
+      let profileNode: Profile = this.getDefaultProfileSettings();
+
+      // Iterate over the nodes in the path
+      for (let i = 0; i < splitPath.length; i++) {
+         // Get the current path being iterated
+         const currentPath = join(take(splitPath, i + 1), ".");
+
+         // Get the current profile in the chain
+         profileNode = profilesList[splitPath[i]];
+
+         // If the profile was not set in the previous iteration
+         if (isEmpty(profileNode)) {
+            // Throw an error
+            throw new Error(`Profile item at path "${currentPath}" does not exist.`)
+         }
+         
+         // If there is next node in the iteration
+         if (i < (splitPath.length - 1)) {
+            // And if there is no children list to pull from
+            if (isEmpty(profileNode.children)) {
+               // Throw an error
+               throw new Error(`Profile item at path "${currentPath}" does not contain any children to traverse.`)
+            }
+
+            // Set the next profile list to grab the next node from
+            profilesList = profileNode.children!;
+         } 
+      }
+
+      // Return the found node
+      return profileNode;
+   }
+
+   /**
     * Gets a Profile object with default values and only required fields set.
     * 
     * @returns - Profile with default values
