@@ -252,6 +252,40 @@ export class ProfileHelper {
       };
    }
 
+   /**
+    * Gets the profile/ children storage object at the path specified. Provides
+    * the top level profile storage if the path is empty.
+    * 
+    * @param path - Path of profile to get the children for, empty for top
+    * level  
+    * @returns - Found profile/ child storage object for the path provided
+    * @throws Error if a profile doesn't exist at any of the nodes in the path
+    */
+   public getChildren(path?: string): Dictionary<string, Profile> {
+      // Declare object to return
+      let childrenStorage: Dictionary<string, Profile>;
+      
+      // If the path is empty
+      if (isEmpty(path)) {
+         // Provide the top level profile storage as children object
+         childrenStorage = workspace.getConfiguration()
+            .get(configurationKeys.ProfilesList) as Dictionary<string, Profile>;
+      }
+      // Otherwise
+      else {
+         // Get the node at the path provided
+         const profileNode = this.getProfileNode(path!);
+
+         // Set return to the children object if it has one or an empty object
+         // otherwise
+         childrenStorage = profileNode.children ?? {};
+      }
+
+      // Return found children object
+      return childrenStorage;
+   }
+
+
    // ToDo update iterative functions to use the new fetProfileNodeList function internally
 
    /**
