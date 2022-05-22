@@ -383,6 +383,7 @@ export class ProfileHelper {
       };
    }
 
+   // ToDo update this to use getProfileNodeList
    /**
     * Gets the unflattened limb pointed to by the path from the profiles list tree.
     * 
