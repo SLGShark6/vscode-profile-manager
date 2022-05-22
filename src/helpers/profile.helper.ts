@@ -272,7 +272,7 @@ export class ProfileHelper {
     * @returns - Found profile/ child storage object for the path provided
     * @throws Error if a profile doesn't exist at any of the nodes in the path
     */
-   public getChildren(path?: string): Dictionary<string, Profile> {
+   public getChildProfiles(path?: string): Dictionary<string, Profile> {
       // Declare object to return
       let childrenStorage: Dictionary<string, Profile>;
       
