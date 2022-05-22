@@ -463,7 +463,7 @@ export class ProfileHelper {
       try {
          // Try to get the profile at the path (will throw an error if it
          // doesn't exist)
-         this.getProfileStack(path);
+         this.getProfileNode(path);
 
          // Mark profile as existant, no error was thrown
          doesExist = true;
