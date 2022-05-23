@@ -7,3 +7,4 @@ export * from './flatten-object.function';
 export * from './map-object-paths.function';
 export * from './profile-stack.type';
 export * from './save-profile-options.type';
+export * from './omit-key.type';
