@@ -1,7 +1,7 @@
-import { Profile } from "@extension/utilities";
+import { Profile, OmitKey } from "@extension/utilities";
 
 export type ProfileStack = {
    id: string,
 
    child?: ProfileStack
-} & Omit<Profile, "children">;
+} & OmitKey<Profile, "children">;
