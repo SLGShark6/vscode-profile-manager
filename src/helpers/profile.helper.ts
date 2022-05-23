@@ -288,8 +288,6 @@ export class ProfileHelper {
    }
 
 
-   // ToDo update iterative functions to use the new fetProfileNodeList function internally
-
    /**
     * Gets the exact profile object contained at each node in the path
     * provided.
@@ -375,7 +373,7 @@ export class ProfileHelper {
       };
    }
 
-   // ToDo update this to use getProfileNodeList
+   
    /**
     * Gets the unflattened limb pointed to by the path from the profiles list tree.
     * 
