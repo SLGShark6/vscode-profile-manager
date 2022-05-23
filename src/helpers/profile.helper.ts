@@ -10,14 +10,11 @@ import {
    isUndefined,
    join,
    last,
-   merge,
-   omit,
    pull,
    split,
    take,
    union,
    unset,
-   values,
    without
 } from "lodash";
 
