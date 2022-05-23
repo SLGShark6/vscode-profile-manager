@@ -388,13 +388,8 @@ export class ProfileHelper {
       // Split the provided path by dot notation
       const splitPath = split(path, '.');
 
-      // Get the current profiles list
-      const profilesList = workspace.getConfiguration().get(configurationKeys.ProfilesList) as Dictionary<string, Profile>;
-
-      // If no profiles exist
-      if (isEmpty(profilesList)) {
-         throw new Error("No profiles exist to get.");
-      }
+      // Get a list of the profile objects at each node in the path
+      const profileNodes = this.getProfileNodeList(path);
 
       // Initialize the profile stack
       let profileStack: ProfileStack = this.getDefaultProfileStack();
@@ -404,15 +399,7 @@ export class ProfileHelper {
 
       for (let i = 0; i < splitPath.length; i++) {
          // Get the current profile in the chain
-         let currentProfile: Profile = profilesList[splitPath[i]];
-
-         // If the profile was not set in the previous iteration
-         if (isEmpty(currentProfile)) {
-            // Get the current path being iterated
-            const currentPath = join(take(splitPath, i + 1), ".");
-            // Throw an error
-            throw new Error(`Profile item at path "${currentPath}" does not exist.`)
-         }
+         let currentProfile: Profile = profileNodes[i];
 
          // Set the settings from the current profile
          nextStack.id = splitPath[i];
