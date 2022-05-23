@@ -226,23 +226,18 @@ export class ProfileHelper {
     * @param path - The path to get the flattened profile from
     */
    public getProfile(path: string): Profile { // ToDo remove children property from return type def
-      // Get the profile stack at the path passed
-      const profileStack = this.getProfileStack(path);
+      // Get a list of the profile objects at each node in the path
+      const profileNodes = this.getProfileNodeList(path);
 
       // Holds the configs of parent profiles up until the final profile
-      let mergedConfigs: Dictionary = profileStack.settings;
-      let mergedExtensionIds: Array<string> = profileStack.extensions;
+      let mergedConfigs: Dictionary = {};
+      let mergedExtensionIds: Array<string> = [];
 
-      // Set the last stack whose settings were merged
-      let lastStack = profileStack;
-
-      while (!isEmpty(lastStack.child)) {
-         // Set the last stack to the new child
-         lastStack = lastStack.child!;
-
+      // Iterate over the profile nodes 
+      for (const node of profileNodes) {
          // Merge in the profile's settings from the previous iteration
-         mergedConfigs = this._configHelper.mergeConfigs(mergedConfigs, lastStack.settings);
-         mergedExtensionIds = union(mergedExtensionIds, lastStack.extensions);
+         mergedConfigs = this._configHelper.mergeConfigs(mergedConfigs, node.settings);
+         mergedExtensionIds = union(mergedExtensionIds, node.extensions);
       }
 
       // Return the merged settings in a new Profile object
