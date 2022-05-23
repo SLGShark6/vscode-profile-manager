@@ -18,7 +18,7 @@ import {
    without
 } from "lodash";
 
-import { Dictionary, Profile, ProfileStack } from "@extension/utilities";
+import { Dictionary, OmitKey, Profile, ProfileStack } from "@extension/utilities";
 import { ConfigHelper, ExtensionHelper } from "@extension/helpers";
 import { configurationKeys } from "@extension/constants";
 
@@ -222,7 +222,7 @@ export class ProfileHelper {
     * 
     * @param path - The path to get the flattened profile from
     */
-   public getProfile(path: string): Profile { // ToDo remove children property from return type def
+   public getProfile(path: string): OmitKey<Profile, 'children'> {
       // Get a list of the profile objects at each node in the path
       const profileNodes = this.getProfileNodeList(path);
 
@@ -373,7 +373,7 @@ export class ProfileHelper {
       };
    }
 
-   
+
    /**
     * Gets the unflattened limb pointed to by the path from the profiles list tree.
     * 
