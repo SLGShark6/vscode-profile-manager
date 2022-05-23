@@ -518,7 +518,4 @@ export class ProfileHelper {
             }
          });
    }
-
-
-
 }
